@@ -22,11 +22,9 @@ one_day_in_ms = 24*60*60*1000
 redis_client.ts().alter('temperature', retention_msecs = one_day_in_ms)
 
 # Another method is creating a time series which derives from an aggregation of the original one
-# Here we create a time series that stores the average temperature every 1s
+# Here we create a time series that stores the average temperature every 0.1s
 try:
     redis_client.ts().create('temperature_avg')
     redis_client.ts().createrule('temperature','temperature_avg', bucket_size_msec=1000)
 except redis.ResponseError:
     pass
-
-
