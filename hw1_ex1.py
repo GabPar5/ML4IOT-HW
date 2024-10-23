@@ -8,10 +8,10 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-h", "--host", default = None, type = str, help="Redis Cloud Host")
-parser.add_argument("-p", "--port", default = None, type = int, help="Redis Cloud Port")
-parser.add_argument("-u", "--user", default = None, type = str, help="Redis Cloud Username")
-parser.add_argument("-p", "--password", default = None, type = str, help="Redis Cloud Password")
+parser.add_argument("-ho", "--host", default = None, type = str, help="Redis Cloud Host")
+parser.add_argument("-po", "--port", default = None, type = int, help="Redis Cloud Port")
+parser.add_argument("-us", "--user", default = None, type = str, help="Redis Cloud Username")
+parser.add_argument("-pw", "--password", default = None, type = str, help="Redis Cloud Password")
 
 params = parser.parse_args()
 
@@ -50,38 +50,38 @@ one_day_in_ms = 24*60*60*1000
 redis_client.ts().alter(mac_address + ':temperature', retention_msecs = one_day_in_ms*30)
 redis_client.ts().alter(mac_address + ':humidity', retention_msecs = one_day_in_ms*30)
 
+try: 
+    while True: # Record the temperature and humidity every 2 seconds until the key 'q' is pressed
+        
+        timestamp_ms = int(time()*1000)
+        formatted_time = datetime.fromtimestamp(timestamp_ms/1000).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
 
-while True: # Record the temperature and humidity every 2 seconds until the key 'q' is pressed
-    key = input()
-    if key in ['q','Q']: # Disable recording of audio if the key 'q' is pressed
-            print('Recording stopped')
-            break
-    timestamp_ms = int(time()*1000)
-    formatted_time = datetime.fromtimestamp(timestamp_ms/1000).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
+        try:
+            # Get temperature and humidity from the sensor, store them in the database and print them
+            temperature = dht_device.temperature
+            humidity = dht_device.humidity
 
-    try:
-        # Get temperature and humidity from the sensor, store them in the database and print them
-        temperature = dht_device.temperature
-        humidity = dht_device.humidity
+            redis_client.ts().add(str(mac_address)+':temperature', timestamp_ms, temperature)
+            redis_client.ts().add(str(mac_address)+':humidity', timestamp_ms, humidity)
 
-        redis_client.ts().add(str(mac_address)+':temperature', timestamp_ms, temperature)
-        redis_client.ts().add(str(mac_address)+':humidity', timestamp_ms, humidity)
+            print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
+            print(f'{formatted_time} - {mac_address}:humidity = {humidity}')
+        except:
+            # If the connection fails, print an error message and try to restart the connection
+            # This is done because the connection is generally unrealiable
+            print('Sensor failure - restarting now')
+            dht_device.exit()
+            dht_device = adafruit_dht.DHT11(D4)
 
-        print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
-        print(f'{formatted_time} - {mac_address}:humidity = {humidity}')
-    except:
-        # If the connection fails, print an error message and try to restart the connection
-        # This is done because the connection is generally unrealiable
-        print('Sensor failure - restarting now')
-        dht_device.exit()
-        dht_device = adafruit_dht.DHT11(D4)
-
-    sleep(2) # Check the temperature and humidity every 2 seconds
+        sleep(2) # Check the temperature and humidity every 2 seconds
+except KeyboardInterrupt:
+    pass
 
 
 
 # Create aggregated time series for temperature and humidity
 # avg
+print(f"calculating metrics...")
 try:
     redis_client.ts().create(mac_address + ':temperature_avg')
     redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_avg', 'avg', bucket_size_msec=1000*60*60)
