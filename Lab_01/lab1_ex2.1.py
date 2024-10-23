@@ -27,19 +27,19 @@ print('Connect:', is_connected)
 
 # Create new time series for temperature and humidity, if they don't exist
 try:
-    redis_client.ts.create(str(mac_address)+':temperature_1')
+    redis_client.ts.create(str(mac_address)+':temperature')
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':humidity_1')
+    redis_client.ts.create(str(mac_address)+':humidity')
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':temperature_1_uncompressed', uncompressed = True)
+    redis_client.ts.create(str(mac_address)+':temperature_uncompressed', uncompressed = True)
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':humidity_1_uncompressed', uncompressed = True)
+    redis_client.ts.create(str(mac_address)+':humidity_uncompressed', uncompressed = True)
 except:
     pass
 
@@ -52,10 +52,10 @@ while True:
         temperature = dht_device.temperature
         humidity = dht_device.humidity
 
-        redis_client.ts().add(str(mac_address)+':temperature_1', timestamp_ms, temperature)
-        redis_client.ts().add(str(mac_address)+':humidity_1', timestamp_ms, humidity)
-        redis_client.ts().add(str(mac_address)+':temperature_1_uncompressed', timestamp_ms, temperature)
-        redis_client.ts().add(str(mac_address)+':humidity_1_uncompressed', timestamp_ms, humidity)
+        redis_client.ts().add(str(mac_address)+':temperature', timestamp_ms, temperature)
+        redis_client.ts().add(str(mac_address)+':humidity', timestamp_ms, humidity)
+        redis_client.ts().add(str(mac_address)+':temperature_uncompressed', timestamp_ms, temperature)
+        redis_client.ts().add(str(mac_address)+':humidity_uncompressed', timestamp_ms, humidity)
 
         print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
         print(f'{formatted_time} - {mac_address}:humidity = {humidity}')

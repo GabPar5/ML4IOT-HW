@@ -23,34 +23,34 @@ print('Connect:', is_connected)
 # 2.1.a
 # Create new time series for temperature and humidity, if they don't exist
 try:
-    redis_client.ts().create(str(mac_address)+':temperature_1')
+    redis_client.ts().create(str(mac_address)+':temperature')
 except:
     pass
 try:
-    redis_client.ts().create(str(mac_address)+':humidity_1')
+    redis_client.ts().create(str(mac_address)+':humidity')
 except:
     pass
 try:
-    redis_client.ts().create(str(mac_address)+':temperature_1_uncompressed', uncompressed = True)
+    redis_client.ts().create(str(mac_address)+':temperature_uncompressed', uncompressed = True)
 except:
     pass
 try:
-    redis_client.ts().create(str(mac_address)+':humidity_1_uncompressed', uncompressed = True)
+    redis_client.ts().create(str(mac_address)+':humidity_uncompressed', uncompressed = True)
 except:
     pass
 
 # Set the retention of the 'temperature' and 'humidity' time series (LAB 01) to 1 day
 one_day_in_ms = 24*60*60*1000
-redis_client.ts().alter(mac_address + ':temperature_1', retention_msecs = one_day_in_ms)
-redis_client.ts().alter(mac_address + ':humidity_1', retention_msecs = one_day_in_ms)
-redis_client.ts().alter(mac_address + ':temperature_1_uncompressed', retention_msecs = one_day_in_ms)
-redis_client.ts().alter(mac_address + ':humidity_1_uncompressed', retention_msecs = one_day_in_ms)
+redis_client.ts().alter(mac_address + ':temperature', retention_msecs = one_day_in_ms)
+redis_client.ts().alter(mac_address + ':humidity', retention_msecs = one_day_in_ms)
+redis_client.ts().alter(mac_address + ':temperature_uncompressed', retention_msecs = one_day_in_ms)
+redis_client.ts().alter(mac_address + ':humidity_uncompressed', retention_msecs = one_day_in_ms)
 
 # 2.1.b
 # Create aggregated time series (lossy compression method)
 try:
     redis_client.ts().create(mac_address + ':temperature_avg', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':temperature_1',mac_address + ':temperature_avg', 'avg', bucket_size_msec=1000*30)
+    redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_avg', 'avg', bucket_size_msec=1000*30)
     redis_client.ts().alter(mac_address + ':temperature_avg', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -58,7 +58,7 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_avg', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':humidity_1',mac_address + ':humidity_avg', 'avg', bucket_size_msec=1000*30)
+    redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_avg', 'avg', bucket_size_msec=1000*30)
     redis_client.ts().alter(mac_address + ':humidity_avg', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
@@ -66,7 +66,7 @@ except redis.ResponseError:
 # 2.1.c
 try:
     redis_client.ts().create(mac_address + ':temperature_min', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':temperature_1',mac_address + ':temperature_min', 'min', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_min', 'min', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':temperature_min', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -74,7 +74,7 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_min', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':humidity_1',mac_address + ':humidity_min','min', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_min','min', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':humidity_min', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
@@ -82,7 +82,7 @@ except redis.ResponseError:
 # 2.1.d
 try:
     redis_client.ts().create(mac_address + ':temperature_max', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':temperature_1',mac_address + ':temperature_max', 'max', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_max', 'max', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':temperature_max', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -90,7 +90,7 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_max', chunk_size=128)
-    redis_client.ts().createrule(mac_address + ':humidity_1',mac_address + ':humidity_max','max', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_max','max', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':humidity_max', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
@@ -99,10 +99,10 @@ except redis.ResponseError:
 # 2.1.e
 print('------ COMPRESSED TIME SERIES STATISTICS ------')
 
-print('Temperature memory usage:', redis_client.ts().info(mac_address + ':temperature_1').memory_usage, 'bytes')
-print('Temperature total samples:', redis_client.ts().info(mac_address + ':temperature_1').total_samples)
-print('Humidity memory usage:', redis_client.ts().info(mac_address + ':humidity_1').memory_usage, 'bytes')
-print('Humidity total samples:', redis_client.ts().info(mac_address + ':humidity_1').total_samples)
+print('Temperature memory usage:', redis_client.ts().info(mac_address + ':temperature').memory_usage, 'bytes')
+print('Temperature total samples:', redis_client.ts().info(mac_address + ':temperature').total_samples)
+print('Humidity memory usage:', redis_client.ts().info(mac_address + ':humidity').memory_usage, 'bytes')
+print('Humidity total samples:', redis_client.ts().info(mac_address + ':humidity').total_samples)
 
 print('Temperature (avg) memory usage:', redis_client.ts().info(mac_address + ':temperature_avg').memory_usage, 'bytes')
 print('Temperature (avg) total samples:', redis_client.ts().info(mac_address + ':temperature_avg').total_samples)
@@ -122,7 +122,7 @@ print('Humidity (max) total samples:', redis_client.ts().info(mac_address + ':hu
 # 2.1.f
 try:
     redis_client.ts().create(mac_address + ':temperature_avg_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':temperature_1_uncompressed',mac_address + ':temperature_avg_uncompressed', 'avg', bucket_size_msec=1000*30)
+    redis_client.ts().createrule(mac_address + ':temperature_uncompressed',mac_address + ':temperature_avg_uncompressed', 'avg', bucket_size_msec=1000*30)
     redis_client.ts().alter(mac_address + ':temperature_avg_uncompressed', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -130,14 +130,14 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_avg_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':humidity_1_uncompressed',mac_address + ':humidity_avg_uncompressed', 'avg', bucket_size_msec=1000*30)
+    redis_client.ts().createrule(mac_address + ':humidity_uncompressed',mac_address + ':humidity_avg_uncompressed', 'avg', bucket_size_msec=1000*30)
     redis_client.ts().alter(mac_address + ':humidity_avg_uncompressed', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
 
 try:
     redis_client.ts().create(mac_address + ':temperature_min_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':temperature_1_uncompressed',mac_address + ':temperature_min_uncompressed', 'min', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':temperature_uncompressed',mac_address + ':temperature_min_uncompressed', 'min', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':temperature_min_uncompressed', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -145,14 +145,14 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_min_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':humidity_1_uncompressed',mac_address + ':humidity_min_uncompressed','min', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':humidity_uncompressed',mac_address + ':humidity_min_uncompressed','min', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':humidity_min_uncompressed', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
 
 try:
     redis_client.ts().create(mac_address + ':temperature_max_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':temperature_1_uncompressed',mac_address + ':temperature_max_uncompressed', 'max', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':temperature_uncompressed',mac_address + ':temperature_max_uncompressed', 'max', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':temperature_max_uncompressed', retention_msecs = one_day_in_ms*30)
 
 except redis.ResponseError:
@@ -160,17 +160,17 @@ except redis.ResponseError:
 
 try:
     redis_client.ts().create(mac_address + ':humidity_max_uncompressed', chunk_size=128, uncompressed = True)
-    redis_client.ts().createrule(mac_address + ':humidity_1_uncompressed',mac_address + ':humidity_max_uncompressed','max', bucket_size_msec=1000*60)
+    redis_client.ts().createrule(mac_address + ':humidity_uncompressed',mac_address + ':humidity_max_uncompressed','max', bucket_size_msec=1000*60)
     redis_client.ts().alter(mac_address + ':humidity_max_uncompressed', retention_msecs = one_day_in_ms*30)
 except redis.ResponseError:
     pass
 
 print('------ UNCOMPRESSED TIME SERIES STATISTICS ------')
 
-print('Temperature memory usage (uncompressed):', redis_client.ts().info(mac_address + ':temperature_1_uncompressed').memory_usage, 'bytes')
-print('Temperature total samples (uncompressed):', redis_client.ts().info(mac_address + ':temperature_1_uncompressed').total_samples)
-print('Humidity memory usage (uncompressed):', redis_client.ts().info(mac_address + ':humidity_1_uncompressed').memory_usage, 'bytes')
-print('Humidity total samples (uncompressed):', redis_client.ts().info(mac_address + ':humidity_1_uncompressed').total_samples)
+print('Temperature memory usage (uncompressed):', redis_client.ts().info(mac_address + ':temperature_uncompressed').memory_usage, 'bytes')
+print('Temperature total samples (uncompressed):', redis_client.ts().info(mac_address + ':temperature_uncompressed').total_samples)
+print('Humidity memory usage (uncompressed):', redis_client.ts().info(mac_address + ':humidity_uncompressed').memory_usage, 'bytes')
+print('Humidity total samples (uncompressed):', redis_client.ts().info(mac_address + ':humidity_uncompressed').total_samples)
 
 print('Temperature (avg) memory usage (uncompressed):', redis_client.ts().info(mac_address + ':temperature_avg_uncompressed').memory_usage, 'bytes')
 print('Temperature (avg) total samples (uncompressed):', redis_client.ts().info(mac_address + ':temperature_avg_uncompressed').total_samples)
