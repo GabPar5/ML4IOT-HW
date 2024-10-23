@@ -3,10 +3,10 @@ import redis
 # Implementation of LOSSY compression methods
 
 # Database parameters
-REDIS_HOST = 'redis-11437.c250.eu-central-1-1.ec2.redns.redis-cloud.com'
-REDIS_PORT = '11437'
+REDIS_HOST = 'redis-16137.c85.us-east-1-2.ec2.redns.redis-cloud.com'
+REDIS_PORT = '16137'
 REDIS_USERNAME = 'default'
-REDIS_PASSWORD = 'tr1oc2EvY67MMIVobjvtUaeDgN8Y1iZS'
+REDIS_PASSWORD = 'hiXoD1azaPf7SjA3k2HCveUX2G0lMjgr'
 
 # Establish a connection to the database and check if the connection works
 redis_client = redis.Redis(host = REDIS_HOST, 

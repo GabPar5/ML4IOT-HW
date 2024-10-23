@@ -11,10 +11,10 @@ mac_address = hex(uuid.getnode()) # Get the MAC address of the Raspberry PI
 dht_device = adafruit_dht.DHT11(D4) # Declare the existence of the humidity-temperature sensor and indicate the linking pin! (D4)
 
 # Database parameters
-REDIS_HOST = 'redis-11437.c250.eu-central-1-1.ec2.redns.redis-cloud.com'
-REDIS_PORT = '11437'
+REDIS_HOST = 'redis-16137.c85.us-east-1-2.ec2.redns.redis-cloud.com'
+REDIS_PORT = '16137'
 REDIS_USERNAME = 'default'
-REDIS_PASSWORD = 'tr1oc2EvY67MMIVobjvtUaeDgN8Y1iZS'
+REDIS_PASSWORD = 'hiXoD1azaPf7SjA3k2HCveUX2G0lMjgr'
 
 # Establish a connection to the database and check if the connection works
 redis_client = redis.Redis(host = REDIS_HOST, 
@@ -27,19 +27,19 @@ print('Connect:', is_connected)
 
 # Create new time series for temperature and humidity, if they don't exist
 try:
-    redis_client.ts.create(str(mac_address)+':temperature')
+    redis_client.ts.create(str(mac_address)+':temperature_1')
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':humidity')
+    redis_client.ts.create(str(mac_address)+':humidity_1')
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':temperature_uncompressed', uncompressed = True)
+    redis_client.ts.create(str(mac_address)+':temperature_1_uncompressed', uncompressed = True)
 except:
     pass
 try:
-    redis_client.ts.create(str(mac_address)+':humidity_uncompressed', uncompressed = True)
+    redis_client.ts.create(str(mac_address)+':humidity_1_uncompressed', uncompressed = True)
 except:
     pass
 
@@ -52,10 +52,10 @@ while True:
         temperature = dht_device.temperature
         humidity = dht_device.humidity
 
-        redis_client.ts().add(str(mac_address)+':temperature', timestamp_ms, temperature)
-        redis_client.ts().add(str(mac_address)+':humidity', timestamp_ms, humidity)
-        redis_client.ts().add(str(mac_address)+':temperature_uncompressed', timestamp_ms, temperature)
-        redis_client.ts().add(str(mac_address)+':humidity_uncompressed', timestamp_ms, humidity)
+        redis_client.ts().add(str(mac_address)+':temperature_1', timestamp_ms, temperature)
+        redis_client.ts().add(str(mac_address)+':humidity_1', timestamp_ms, humidity)
+        redis_client.ts().add(str(mac_address)+':temperature_1_uncompressed', timestamp_ms, temperature)
+        redis_client.ts().add(str(mac_address)+':humidity_1_uncompressed', timestamp_ms, humidity)
 
         print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
         print(f'{formatted_time} - {mac_address}:humidity = {humidity}')

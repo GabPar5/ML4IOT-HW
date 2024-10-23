@@ -3,11 +3,11 @@
 
 import redis
 
-REDIS_HOST = 'redis-16034.c135.eu-central-1-1.ec2.redns.redis-cloud.com'
-REDIS_PORT = '16034'
+REDIS_HOST = 'redis-16137.c85.us-east-1-2.ec2.redns.redis-cloud.com'
+REDIS_PORT = '16137'
 # Username and Password are the ones of the database, not of the Redis account!
 REDIS_USERNAME = 'default'
-REDIS_PASSWORD = 'wcgcuwxMCtJZd9piadNXW0R8tQPIzIFZ'
+REDIS_PASSWORD = 'hiXoD1azaPf7SjA3k2HCveUX2G0lMjgr'
 
 redis_client = redis.Redis(host = REDIS_HOST, 
                            port = REDIS_PORT, 
