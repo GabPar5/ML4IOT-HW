@@ -43,7 +43,10 @@ try:
 except:
     pass
 
-while True:
+mins = 15
+secs = 0
+end_time = time() + 60*mins + secs
+while time() < end_time:
     timestamp_ms = int(time()*1000)
     formatted_time = datetime.fromtimestamp(timestamp_ms/1000).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
 
