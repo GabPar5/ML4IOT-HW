@@ -89,7 +89,7 @@ except KeyboardInterrupt:
 # avg
 print(f"calculating metrics...")
 try:
-    redis_client.ts().create(mac_address + ':temperature_avg')
+    redis_client.ts().create(mac_address + ':temperature_avg') # series for average temperature
     redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_avg', 'avg', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':temperature_avg', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 
@@ -97,7 +97,7 @@ except redis.ResponseError:
     pass
 
 try:
-    redis_client.ts().create(mac_address + ':humidity_avg')
+    redis_client.ts().create(mac_address + ':humidity_avg') # series for average humidity
     redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_avg', 'avg', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':humidity_avg', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 except redis.ResponseError:
@@ -105,7 +105,7 @@ except redis.ResponseError:
 
 # min
 try:
-    redis_client.ts().create(mac_address + ':temperature_min')
+    redis_client.ts().create(mac_address + ':temperature_min') # series for minimum temperature
     redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_min', 'min', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':temperature_min', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 
@@ -113,7 +113,7 @@ except redis.ResponseError:
     pass
 
 try:
-    redis_client.ts().create(mac_address + ':humidity_min')
+    redis_client.ts().create(mac_address + ':humidity_min') # series for minimum humidity
     redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_min','min', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':humidity_min', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 except redis.ResponseError:
@@ -121,7 +121,7 @@ except redis.ResponseError:
 
 # max
 try:
-    redis_client.ts().create(mac_address + ':temperature_max')
+    redis_client.ts().create(mac_address + ':temperature_max') # series for maximum temperature
     redis_client.ts().createrule(mac_address + ':temperature',mac_address + ':temperature_max', 'max', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':temperature_max', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 
@@ -129,7 +129,7 @@ except redis.ResponseError:
     pass
 
 try:
-    redis_client.ts().create(mac_address + ':humidity_max')
+    redis_client.ts().create(mac_address + ':humidity_max') # series for maximum humidity
     redis_client.ts().createrule(mac_address + ':humidity',mac_address + ':humidity_max','max', bucket_size_msec=1000*60*BUCKET_SIZE_MINS)
     redis_client.ts().alter(mac_address + ':humidity_max', retention_msecs = ONE_DAY_IN_MS*RETENTION_DAYS_AGG)
 except redis.ResponseError:
