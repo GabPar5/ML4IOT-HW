@@ -4,10 +4,72 @@ from time import time, sleep
 from datetime import datetime
 from board import D4
 import sounddevice as sd
-from preprocessing import Normalization, Spectrogram
-from reader import AudioReader
 import tensorflow as ts
+import tensorflow_io as tfio
 from scipy import signal
+
+# ------------------------------ Class -----------------------------------------------------------------------
+class Normalization():
+    def __init__(self, bit_depth):
+        self.max_range = bit_depth.max
+
+    def normalize_audio(self, audio):
+        audio_float32 = tf.cast(audio, tf.float32)
+        audio_normalized = audio_float32 / self.max_range
+
+        return audio_normalized
+
+    def normalize(self, audio, label):
+        audio_normalized = self.normalize_audio(audio)
+
+        return audio_normalized, label
+
+class Spectrogram():
+    def __init__(self, sampling_rate, frame_length_in_s, frame_step_in_s):
+        self.frame_length = int(frame_length_in_s * sampling_rate)
+        self.frame_step = int(frame_step_in_s * sampling_rate)
+
+    def get_spectrogram(self, audio):
+        stft = tf.signal.stft(
+            audio, 
+            frame_length=self.frame_length,
+            frame_step=self.frame_step,
+            fft_length=self.frame_length
+        )
+        spectrogram = tf.abs(stft)
+
+        return spectrogram
+
+    def get_spectrogram_and_label(self, audio, label):
+        spectrogram = self.get_spectrogram(audio)
+
+        return spectrogram, label
+
+
+class AudioReader():
+    def __init__(self, bit_depth):
+        self.bit_depth = bit_depth
+
+    def get_audio(self, filename):
+        audio_io_tensor = tfio.audio.AudioIOTensor(filename, self.bit_depth) 
+        audio_tensor = audio_io_tensor.to_tensor()
+
+        return audio_tensor
+
+    def get_label(self, filename):
+        path_parts = tf.strings.split(filename, '/')
+        path_end = path_parts[-1]
+        file_parts = tf.strings.split(path_end, '_')
+        label = file_parts[0]
+        
+        return label
+
+    def get_audio_and_label(self, filename):
+        audio = self.get_audio(filename)
+        label = self.get_label(filename)
+
+        return audio, label
+
 
 class VAD():
     def __init__(
@@ -45,7 +107,7 @@ class VAD():
 
 
 
-
+# ------------------------------------------Functions and Main ---------------------------------------------
 def callback(indata, frames, callback_time, status):
     global silence
     global oldT 
@@ -91,7 +153,8 @@ data_collection_state = False
 oldT = None
 audio_reader = AudioReader(tf.int16)
 normalization = Normalization(tf.int16)
-vad_processor = VAD() # vad(hyperparameter) with hyperparameter to define
+params = [16000, 0.03, 0.03, 10, 0.1] # latency: 22.3 +/- 0.3 ms, accuracy: 98.00%
+vad_processor = VAD(params[0], params[1], params[2], params[3],params[4]) # vad(hyperparameter) with hyperparameter to define
 with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = samplerate, blocksize = length_in_secs*samplerate, callback = callback):
     if not silence:
         oldT = time()
