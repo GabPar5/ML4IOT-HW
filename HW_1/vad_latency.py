@@ -85,21 +85,26 @@ Popen('sudo sh -c "echo performance >'
 x_test = tf.random.normal((16000,))
 
 normalization = Normalization(tf.int16)
-vad_processor = VAD(16000, 0.04, 0.01, 20, 0.4)
-latencies = []
-for i in range(200):
-    start = time()
-    x_normalized = normalization.normalize_audio(x_test)
-    is_silence = vad_processor.is_silence(x_normalized)
-    end = time()
 
-    if i >= 100:
-        latencies.append(end - start)
+grid = [[16000,0.01,0.01,10,0.1],[16000,0.02,0.02,10,0.1], [16000,0.02,0.015,10,0.1],[16000, 0.03,0.03,10,0.1], [16000,0.3,0.0225,10,0.1], [16000,0.03,0.015,10,0.1],
+          [16000,0.04,0.04,10,0.1], [16000,0.04,0.02,10,0.1], [16000,0.04,0.01,10,0.1], [16000,0.05,0.0125,10,0.1], [16000,0.03,0.0075,10,0.2]]
+for params in grid:
+    vad_processor = VAD(params[0], params[1], params[2], params[3], params[4])
+    latencies = []
+    for i in range(200):
+        start = time()
+        x_normalized = normalization.normalize_audio(x_test)
+        is_silence = vad_processor.is_silence(x_normalized)
+        end = time()
 
-    sleep(0.1)
+        if i >= 100:
+            latencies.append(end - start)
 
-latencies = np.array(latencies) * 1000
-median_latency = np.median(latencies)
-std_latency = np.std(latencies)
+        sleep(0.1)
 
-print(f'VAD Latency: {median_latency:.1f} +/- {std_latency:.1f}ms')
+    latencies = np.array(latencies) * 1000
+    median_latency = np.median(latencies)
+    std_latency = np.std(latencies)
+    
+    print(f'Params used: {params}')
+    print(f'VAD Latency: {median_latency:.1f} +/- {std_latency:.1f}ms')
