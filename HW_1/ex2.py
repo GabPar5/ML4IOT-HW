@@ -4,11 +4,10 @@ from time import time, sleep
 from datetime import datetime
 from board import D4
 import sounddevice as sd
-import tensorflow as ts
-import tensorflow_io as tfio
+import tensorflow as tf
 from scipy import signal
 
-# ------------------------------ Class -----------------------------------------------------------------------
+# ------------------------------ Classes -----------------------------------------------------------------------
 class Normalization():
     def __init__(self, bit_depth):
         self.max_range = bit_depth.max
@@ -44,32 +43,6 @@ class Spectrogram():
         spectrogram = self.get_spectrogram(audio)
 
         return spectrogram, label
-
-
-class AudioReader():
-    def __init__(self, bit_depth):
-        self.bit_depth = bit_depth
-
-    def get_audio(self, filename):
-        audio_io_tensor = tfio.audio.AudioIOTensor(filename, self.bit_depth) 
-        audio_tensor = audio_io_tensor.to_tensor()
-
-        return audio_tensor
-
-    def get_label(self, filename):
-        path_parts = tf.strings.split(filename, '/')
-        path_end = path_parts[-1]
-        file_parts = tf.strings.split(path_end, '_')
-        label = file_parts[0]
-        
-        return label
-
-    def get_audio_and_label(self, filename):
-        audio = self.get_audio(filename)
-        label = self.get_label(filename)
-
-        return audio, label
-
 
 class VAD():
     def __init__(
@@ -107,27 +80,44 @@ class VAD():
 
 
 
+# ------------------------------------------Global Variables ---------------------------------------------
+
+mac_address = hex(uuid.getnode()) # Get the MAC address of the Raspberry PI
+dht_device = adafruit_dht.DHT11(D4) # Declare the existence of the humidity-temperature sensor and indicate the linking pin! (D4)
+silence = True 
+length_in_secs = 2
+bit_depth = "int16"
+samplerate = 48000
+targetrate = 16000
+downsampling_factor = samplerate/targetrate # Factor used to downsample from 48 khz to 16 khz
+data_collection_state = False # State variable, decides if data is collected or not
+oldT = None # Time stamp used to check if at least 5 seconds passed from the previous state change
+normalization_processor = Normalization(tf.int16)
+params = [16000, 0.03, 0.03, 10, 0.1] # latency: 22.3 +/- 0.3 ms, accuracy: 98.00% - got from exercise 2.1 HW1
+vad_processor = VAD(params[0], params[1], params[2], params[3],params[4])
+
 # ------------------------------------------Functions and Main ---------------------------------------------
+
 def callback(indata, frames, callback_time, status):
     global silence
-    global oldT 
     global data_collection_state
-
-    # indata --> flie audio
-    audio, label = audio_reader.get_audio_and_label(indata)
-    audio = tf.cast(audio, tf.float32)
-    audio_resampled = signal.resample_poly(audio, up=1, down=downsampling_factor)
-
     
-    audio, label = normalization.normalize(audio, label)
-    audio = signal.resample_poly(audio)
-    audio = tf.squeeze(audio)
-
-    if oldT is None or time() - oldT >= 5*(10**6):
-        silence = vad_processor.is_silence(audio)
+    # If there was no change of state or more than 5 seconds passed from the previous change of state, check if there is silence, else do nothing
+    if oldT is None or time() - oldT >= 5*(10**6): # oldT is None until the first change of state, 
+        # Audio preprocessing (casting, downsampling, conversion to tensor, squeezing, normalization)
+        audio = indata.astype("np.float32")
+        audio = signal.resample_poly(audio, up=1, down=downsampling_factor)
+        audio = tf.convert_to_tensor(audio)
+        audio = tf.squeeze(audio)
+        audio = normalization_processor.normalize_audio(audio)
+        silence = vad_processor.is_silence(audio) # Check
+        if not silence: # Change of state if there is no silence
+            data_collection_state = not data_collection_state
+            print(f'Data collection: {data_collection_state}') 
     else: 
-        silence = 1
-
+        silence = 1 # Ignore audio
+    
+    # If data collection is enabled, collect data
     if data_collection_state:
         timestamp_ms = int(time()*1000)
         formatted_time = datetime.fromtimestamp(timestamp_ms/1000).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
@@ -144,26 +134,10 @@ def callback(indata, frames, callback_time, status):
             dht_device.exit()
             dht_device = adafruit_dht.DHT11(D4)
 
-silence = True
-length_in_secs = 2
-bit_depth = "int16"
-samplerate = 48000
-downsampling_factor = 48/16
-data_collection_state = False
-oldT = None
-audio_reader = AudioReader(tf.int16)
-normalization = Normalization(tf.int16)
-params = [16000, 0.03, 0.03, 10, 0.1] # latency: 22.3 +/- 0.3 ms, accuracy: 98.00%
-vad_processor = VAD(params[0], params[1], params[2], params[3],params[4]) # vad(hyperparameter) with hyperparameter to define
 with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = samplerate, blocksize = length_in_secs*samplerate, callback = callback):
+    # Save timestamp when there is no silence
     if not silence:
         oldT = time()
-        if not data_collection_state:
-            data_collection_state = True
-            print ('Data collection started')
-        else:
-            data_collection_state = False
-            print('Data collection stopped')
 
     
     
