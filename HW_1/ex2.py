@@ -149,7 +149,7 @@ with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = sa
     # Store timestamp when there is no silence
     while True:
         if not silence:
-            oldT = time()
+            oldT = time() # save the time at which the state changes, in order to start counting 5 seconds until the next command
 
     
     
