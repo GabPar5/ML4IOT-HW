@@ -97,7 +97,7 @@ downsampling_factor = samplerate/targetrate # Factor used to downsample an audio
 data_collection_state = False # State variable, tells if data about temperature and humidity is being collected or not
 oldT = None # Time stamp used to check if at least 5 seconds passed from the previous state change
 normalization_processor = Normalization(tf.int16)
-params = [16000, 0.008, 0.002, 20, 0.1] # VAD optimal hyperparameters - latency: 22.3 +/- 0.3 ms, accuracy: 98.00% - got from exercise 2.1 HW1
+params = [16000, 0.008, 0.002, 20, 0.1] # VAD optimal hyperparameters - latency: 17.5 +/- 0.2 ms, accuracy: 97.67% - got from exercise 2.1 HW1
 vad_processor = VAD(params[0], params[1], params[2], params[3],params[4])
 
 # ------------------------------------------ Functions ---------------------------------------------
