@@ -1,6 +1,6 @@
 import adafruit_dht
 import uuid
-from time import time, sleep
+from time import time
 from datetime import datetime
 from board import D4
 import sounddevice as sd
