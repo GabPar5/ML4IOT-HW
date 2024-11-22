@@ -89,6 +89,7 @@ class VAD():
 mac_address = hex(uuid.getnode()) # Get the MAC address of the Raspberry PI
 dht_device = adafruit_dht.DHT11(D4) # Declare the existence of the humidity-temperature sensor and indicate the linking pin! (D4)
 silence = True # State variable, output of VAD class
+timestamp = None # Time stamp used to check if at least 2 seconds passed from the previous data collection
 length_in_secs = 1 # Time interval between each callback execution (in seconds)
 bit_depth = "int16" # Resolution of each sample
 samplerate = 48000 # Sampling rate of the microphone
@@ -132,23 +133,22 @@ with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = sa
     while True:
         if not silence:
             oldT = time() # save the time at which the state changes, in order to start counting 5 seconds until the next command
-        # If data collection is enabled, collect data
-        if data_collection_state:
-            if time() - timestamp >= 2:
-                timestamp = int(time())
-                formatted_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
-                try:
-                    # Get temperature and humidity from the sensor, store them in the database and print them
-                    temperature = dht_device.temperature
-                    humidity = dht_device.humidity
-                    print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
-                    print(f'{formatted_time} - {mac_address}:humidity = {humidity}')
-                except:
-                    # If the connection fails, print an error message and try to restart the connection
-                    # This is done because the connection is generally unrealiable
-                    print('Sensor failure')
-                    dht_device.exit()
-                    dht_device = adafruit_dht.DHT11(D4)
+        # If data collection is enabled and 2 seconds have passed from the previous data collection, collect new data
+        if data_collection_state and (timestamp is None or (time() - timestamp >= 2)):
+            timestamp = int(time())
+            formatted_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S.%f') # Convert the timestamp to human-readable time
+            try:
+                # Get temperature and humidity from the sensor, store them in the database and print them
+                temperature = dht_device.temperature
+                humidity = dht_device.humidity
+                print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
+                print(f'{formatted_time} - {mac_address}:humidity = {humidity}')
+            except:
+                # If the connection fails, print an error message and try to restart the connection
+                # This is done because the connection is generally unrealiable
+                print('Sensor failure')
+                dht_device.exit()
+                dht_device = adafruit_dht.DHT11(D4)
 
     
     
