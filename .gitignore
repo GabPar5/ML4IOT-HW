@@ -1,6 +1,11 @@
 # Github Access Token
 Github token.txt
 
+# MSC Dataset
+msc-train/
+msc-val/
+msc-test/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
