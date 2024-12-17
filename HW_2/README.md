@@ -4,4 +4,5 @@
 
 -3rd model: Log-Mel preprocessing args(64 bin, lower_freq = 20, upper_freq = 4000) with callbacks, CNN without DephtWise Conv2D, no weigths-pruning ------> 77.4%, 1162.1 kB 
 
+-4th model: Log-Mel preprocessing args(40 bin, lower_freq = 30, upper_freq = 6000) with callbacks, CNN without DephtWise Conv2D, no weigths-pruning ------> 86.6%, 1162.1 kB 
 
