@@ -1,0 +1,55 @@
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.016, 'num_mel_bins': 30, 'lower_frequency': 20, 'upper_frequency': 6000, 'num_coefficients': 30}
+Model: ./tflite_models/1734528085.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.016, 'num_mel_bins': 40, 'lower_frequency': 20, 'upper_frequency': 6000, 'num_coefficients': 30}
+Model: ./tflite_models/1734528599.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.016, 'num_mel_bins': 40, 'lower_frequency': 20, 'upper_frequency': 4000, 'num_coefficients': 40}
+Model: ./tflite_models/1734529478.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.016, 'num_mel_bins': 40, 'lower_frequency': 20, 'upper_frequency': 6000, 'num_coefficients': 40}
+Model: ./tflite_models/1734529692.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.012, 'num_mel_bins': 30, 'lower_frequency': 40, 'upper_frequency': 4000, 'num_coefficients': 30}
+Model: ./tflite_models/1734531217.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.008, 'num_mel_bins': 40, 'lower_frequency': 40, 'upper_frequency': 4000, 'num_coefficients': 30}
+Model: ./tflite_models/1734531776.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.008, 'num_mel_bins': 30, 'lower_frequency': 40, 'upper_frequency': 6000, 'num_coefficients': 40}
+Model: ./tflite_models/1734532416.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.008, 'num_mel_bins': 40, 'lower_frequency': 40, 'upper_frequency': 4000, 'num_coefficients': 40}
+Model: ./tflite_models/1734532805.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.012, 'num_mel_bins': 40, 'lower_frequency': 40, 'upper_frequency': 6000, 'num_coefficients': 40}
+Model: ./tflite_models/1734532970.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.012, 'num_mel_bins': 30, 'lower_frequency': 60, 'upper_frequency': 6000, 'num_coefficients': 40}
+Model: ./tflite_models/1734535645.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
+Params: {'sampling_rate': 16000, 'frame_length_in_s': 0.016, 'frame_step_in_s': 0.008, 'num_mel_bins': 40, 'lower_frequency': 60, 'upper_frequency': 2000, 'num_coefficients': 40}
+Model: ./tflite_models/1734535901.tflite
+Accuracy: 99.500%
+Model size: 1162.2KB
+
