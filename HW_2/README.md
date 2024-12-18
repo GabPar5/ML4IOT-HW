@@ -19,3 +19,7 @@
 -10th model: MFCC preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 60, upper_freq = 6000, batch_size = 20, epochs = 20, # = 40) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 99%, 1162.1 kB
 
 -11th model: MFCC preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 40, upper_freq = 4000, batch_size = 20, epochs = 20, # = 40) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 99%, 1162.1 kB
+
+-12th model: MFCC preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 60, upper_freq = 4000, batch_size = 20, epochs = 20, # = 40) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 99%, 1162.1 kB
+
+With upper_freq = 4000 we reach 99% independently from the lower_freq
