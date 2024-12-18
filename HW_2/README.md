@@ -11,3 +11,7 @@
 -6th model: Log-Mel preprocessing args(40 bin, length = 16ms, step = 8ms, lower_freq = 20, upper_freq = 4000, batch_size = 20, epochs = 20) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 94%, 1162.1 kB
 
 -7th model: Log-Mel preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 20, upper_freq = 4000, batch_size = 20, epochs = 20) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 98%, 1162.1 kB
+
+-8th model: MFCC preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 20, upper_freq = 4000, batch_size = 20, epochs = 20, # = 20) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 98%, 1162.1 kB
+
+-9th model: MFCC preprocessing args(40 bin, length = 32ms, step = 24ms, lower_freq = 20, upper_freq = 4000, batch_size = 20, epochs = 20, # = 40) with callbacks(lr from 0.01 to 0.0001), CNN without DephtWise Conv2D, no weigths-pruning ------> 99%, 1162.1 kB
