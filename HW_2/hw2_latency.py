@@ -8,16 +8,16 @@ from time import time, sleep
 # Ensure that the PREPROCESSING_ARGS values match those used during training.
 # No other modifications are permitted in this script
 
-MODEL_FILE_PATH = './1730886043.tflite' # file extension can be .tflite or .zip
+MODEL_FILE_PATH = './1734718213_best_model.tflite' # file extension can be .tflite or .zip
 
 PREPROCESSING_ARGS = {
     'sampling_rate': 16000,
-    'frame_length_in_s': 0.04,
-    'frame_step_in_s': 0.02,
-    'num_mel_bins': 40,
+    'frame_length_in_s': 0.016,
+    'frame_step_in_s': 0.016,
+    'num_mel_bins': 30,
     'lower_frequency': 20,
-    'upper_frequency': 4000,
-    'num_coefficients': 0  # set num_coefficients to 0 if log-Mel Spectrogram features have been used
+    'upper_frequency': 6000,
+    'num_coefficients': 30  # set num_coefficients to 0 if log-Mel Spectrogram features have been used
 }
 
 
