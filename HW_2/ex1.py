@@ -7,9 +7,10 @@ import sounddevice as sd
 import tensorflow as tf
 from scipy import signal
 import numpy as np
+improt tensorflow as tf
 import argparse
 import redis
-from prediction import predict
+#from prediction import predict
 
 
 # ------------------------------ Classes -----------------------------------------------------------------------
@@ -50,6 +51,69 @@ class Spectrogram():
         spectrogram = self.get_spectrogram(audio)
 
         return spectrogram, label
+
+# Computes the log-Mel spectrogram of an audio signal
+class MelSpectrogram():
+    def __init__(
+        self, 
+        sampling_rate,
+        frame_length_in_s,
+        frame_step_in_s,
+        num_mel_bins,
+        lower_frequency,
+        upper_frequency
+    ):
+        self.spectrogram_processor = Spectrogram(sampling_rate, frame_length_in_s, frame_step_in_s)
+        num_spectrogram_bins = self.spectrogram_processor.frame_length // 2 + 1
+
+        self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
+            num_mel_bins=num_mel_bins,
+            num_spectrogram_bins=num_spectrogram_bins,
+            sample_rate=sampling_rate,
+            lower_edge_hertz=lower_frequency,
+            upper_edge_hertz=upper_frequency
+        )
+
+    def get_mel_spec(self, audio):
+        spectrogram = self.spectrogram_processor.get_spectrogram(audio)
+        mel_spectrogram = tf.matmul(spectrogram, self.linear_to_mel_weight_matrix)
+        log_mel_spectrogram = tf.math.log(mel_spectrogram + 1.e-6)
+
+        return log_mel_spectrogram
+
+    def get_mel_spec_and_label(self, audio, label):
+        log_mel_spectrogram = self.get_mel_spec(audio)
+
+        return log_mel_spectrogram, label
+
+# Computes the MFCCs
+class MFCC():
+    def __init__(
+        self, 
+        sampling_rate,
+        frame_length_in_s,
+        frame_step_in_s,
+        num_mel_bins,
+        lower_frequency,
+        upper_frequency,
+        num_coefficients
+    ):
+        self.mel_spec_processor = MelSpectrogram(
+            sampling_rate, frame_length_in_s, frame_step_in_s, num_mel_bins, lower_frequency, upper_frequency
+        )
+        self.num_coefficients = num_coefficients
+
+    def get_mfccs(self, audio):
+        log_mel_spectrogram = self.mel_spec_processor.get_mel_spec(audio)
+        mfccs = tf.signal.mfccs_from_log_mel_spectrograms(log_mel_spectrogram)
+        mfccs = mfccs[..., :self.num_coefficients]
+
+        return mfccs
+
+    def get_mfccs_and_label(self, audio, label):
+        mfccs = self.get_mfccs(audio)
+
+        return mfccs, label
 
 # Detects if an audio signal is silent
 class VAD():
@@ -102,8 +166,14 @@ downsampling_factor = samplerate/targetrate # Factor used to downsample an audio
 data_collection_state = False # State variable, tells if data about temperature and humidity is being collected or not
 oldT = None # Time stamp used to check if at least 5 seconds passed from the previous state change
 normalization_processor = Normalization(tf.int16)
-params = [16000, 0.008, 0.002, 20, 0.1] # VAD optimal hyperparameters - latency: 17.5 +/- 0.2 ms, accuracy: 97.67% - got from exercise 2.1 HW1
-vad_processor = VAD(params[0], params[1], params[2], params[3],params[4])
+vad_params = [16000, 0.008, 0.002, 20, 0.1] # VAD optimal hyperparameters - latency: 17.5 +/- 0.2 ms, accuracy: 97.67% - got from exercise 2.1 HW1
+vad_processor = VAD(vad_params[0], vad_params[1], vad_params[2], vad_params[3], vad_params[4])
+mfcc_params = [16000, 0.016, 0.016, 30, 20, 6000, 30] # Preprocessing optimal hyperparameters
+mfcc_processor = MFCC(mfcc_params[0], mfcc_params[1], mfcc_params[2], mfcc_params[3], mfcc_params[4], mfcc_params[5], mfcc_params[6])
+model_file_path = './model10.tflite' # KWS tflite model path
+interpreter = tf.lite.Interpreter(model_path=model_file_path) # Initialize tflite interpreter
+interpreter.allocate_tensors()
+input_details = interpreter.get_input_details() # Get input details from tflite model
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-h", "--REDIS_HOST", type=str, help="Redis host")
@@ -126,13 +196,23 @@ def callback(indata, frames, callback_time, status):
         audio = normalization_processor.normalize_audio(audio)
         # Check if the processed audio signal is silent
         silence = vad_processor.is_silence(audio) 
-        if not silence: # Change of state if there is no silence
-            probabilities = predict(audio) # return the probabilities of down and up
+        if not silence: # Perform keyword spotting if there is no silence
+            audio_features = mfcc_processor.get_mfccs(audio) # Compute MFCCs
+            interpreter.set_tensor(input_details[0]['index'], audio_features) # Set value of input tensor
+            probabilities = interpreter.invoke() # return the probabilities of down and up
             top_1 = np.argmax(probabilities) # return the index of the higher probability
             top_1_prob = probabilities[top_1] # return the probability of the top 1 prediction
-            print(f'Probabilities: {probabilities}')
+            print(f'Probabilities (down/up): {probabilities}')
             if top_1_prob <=0.99:
                 pass
+            # WIP - PROPOSED CORRECTION # 1
+            # else:
+            #     data_collection_state = top_1
+            # PROPOSED CORRECTION # 2
+            # elif top_1 == 0:
+            #     data_collection_state = False
+            # elif top_1 == 1:
+            #     data_collection_state = True
             elif probabilities[1] > 0.99: # if the probability of up is higher that 99%, enable data collection
                 data_collection_state = True
                 print(f'Data collection: {data_collection_state}') 
