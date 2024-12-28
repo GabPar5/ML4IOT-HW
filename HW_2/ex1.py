@@ -7,13 +7,13 @@ import sounddevice as sd
 import tensorflow as tf
 from scipy import signal
 import numpy as np
-improt tensorflow as tf
+import tensorflow as tf
 import argparse
 import redis
-#from prediction import predict
 
 
 # ------------------------------ Classes -----------------------------------------------------------------------
+
 # Normalization of audio signal
 class Normalization():
     def __init__(self, bit_depth):
@@ -151,7 +151,6 @@ class VAD():
             return 1
 
 
-
 # ------------------------------------------Global Variables ---------------------------------------------
 
 mac_address = hex(uuid.getnode()) # Get the MAC address of the Raspberry PI
@@ -174,14 +173,19 @@ model_file_path = './model10.tflite' # KWS tflite model path
 interpreter = tf.lite.Interpreter(model_path=model_file_path) # Initialize tflite interpreter
 interpreter.allocate_tensors()
 input_details = interpreter.get_input_details() # Get input details from tflite model
+output_details = interpreter.get_output_details() # Get output details from tflite model
+labels = ['down', 'up'] # Keywords labels
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-h", "--REDIS_HOST", type=str, help="Redis host")
-parser.add_argument("-p", "--REDIS_PORT", type=int, help="Redis port")
-parser.add_argument("-u", "--REDIS_USERNAME", type=str , help="Redis username")
-parser.add_argument("-P", "--REDIS_PASSWORD", type=str , help="Redis password")
-params = parser.parse_args()
+parser.add_argument("-ho", "--host", default = None, type=str, help="Redis host")
+parser.add_argument("-po", "--port", default = None, type=int, help="Redis port")
+parser.add_argument("-us", "--user", default = None, type=str , help="Redis username")
+parser.add_argument("-pw", "--password", default = None, type=str , help="Redis password")
+args = parser.parse_args()
+
+
 # ------------------------------------------ Functions ---------------------------------------------
+
 def callback(indata, frames, callback_time, status):
     global silence
     global data_collection_state
@@ -198,21 +202,17 @@ def callback(indata, frames, callback_time, status):
         silence = vad_processor.is_silence(audio) 
         if not silence: # Perform keyword spotting if there is no silence
             audio_features = mfcc_processor.get_mfccs(audio) # Compute MFCCs
+            audio_features = tf.expand_dims(audio_features, 0) # Match audio features and model input shape
+            audio_features = tf.expand_dims(audio_features, -1)
             interpreter.set_tensor(input_details[0]['index'], audio_features) # Set value of input tensor
-            probabilities = interpreter.invoke() # return the probabilities of down and up
-            top_1 = np.argmax(probabilities) # return the index of the higher probability
-            top_1_prob = probabilities[top_1] # return the probability of the top 1 prediction
-            print(f'Probabilities (down/up): {probabilities}')
+            interpreter.invoke() # Performs inference (KWS)
+            probabilities = interpreter.get_tensor(output_details[0]['index']) # Return the probabilities of down and up
+            print(f'Probabilities (down/up): {probabilities[0]}')
+            top_1 = np.argmax(probabilities[0]) # return the index of the higher probability
+            top_1_prob = probabilities[0,top_1] # return the probability of the top 1 prediction
+            print(f'The word {labels[top_1]} has been said with probability {top_1_prob}')
             if top_1_prob <=0.99:
                 pass
-            # WIP - PROPOSED CORRECTION # 1
-            # else:
-            #     data_collection_state = top_1
-            # PROPOSED CORRECTION # 2
-            # elif top_1 == 0:
-            #     data_collection_state = False
-            # elif top_1 == 1:
-            #     data_collection_state = True
             elif probabilities[1] > 0.99: # if the probability of up is higher that 99%, enable data collection
                 data_collection_state = True
                 print(f'Data collection: {data_collection_state}') 
@@ -224,14 +224,15 @@ def callback(indata, frames, callback_time, status):
 
 
 # ------------------------------------------ Main ---------------------------------------------
+
 # Establish a connection to the database and check if the connection works
-redis_client = redis.Redis(host = parser.REDIS_HOST, 
-                           port = parser.REDIS_PORT, 
-                           username = parser.REDIS_USERNAME, 
-                           password = parser.REDIS_PASSWORD) 
+redis_client = redis.Redis(host = args.host, 
+                           port = args.port, 
+                           username = args.user, 
+                           password = args.password) 
 
 is_connected = redis_client.ping()
-print('Connect:', is_connected)
+print('REDIS CONNECTION:', is_connected)
 
 # Create new time series for temperature and humidity, if they don't exist
 try:
