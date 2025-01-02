@@ -188,10 +188,11 @@ args = parser.parse_args()
 
 def callback(indata, frames, callback_time, status):
     global silence
+    global oldT
     global data_collection_state
     
     # If there was no change of state or more than 2 seconds passed from the previous change of state, check if there is silence, else do nothing
-    if oldT is None or time() - oldT >= 2: # oldT is None until the first change of state happens
+    if oldT is None or time() - oldT >= 5: # oldT is None until the first change of state happens
         # Audio preprocessing (casting, downsampling, conversion to tensor, squeezing, normalization)
         audio = indata.astype(np.float32)
         audio = signal.resample_poly(audio, up=1, down=downsampling_factor)
@@ -213,14 +214,14 @@ def callback(indata, frames, callback_time, status):
             print(f'The word {labels[top_1]} has been said with probability {top_1_prob}')
             if top_1_prob <=0.99:
                 pass
-            elif probabilities[1] > 0.99: # if the probability of up is higher that 99%, enable data collection
+            elif probabilities[0,1] > 0.99: # if the probability of up is higher that 99%, enable data collection
                 data_collection_state = True
+                oldT = time()
                 print(f'Data collection: {data_collection_state}') 
-            elif probabilities[0] > 0.99: # if the probability of down is higher that 99%, disable data collection
+            elif probabilities[0,0] > 0.99: # if the probability of down is higher that 99%, disable data collection
                 data_collection_state = False
+                oldT = time()
                 print(f'Data collection: {data_collection_state}')
-    else: 
-        silence = 1 # Ignore audio  
 
 
 # ------------------------------------------ Main ---------------------------------------------
@@ -243,14 +244,6 @@ try:
     redis_client.ts.create(str(mac_address)+':humidity')
 except:
     pass
-try:
-    redis_client.ts.create(str(mac_address)+':temperature_uncompressed', uncompressed = True)
-except:
-    pass
-try:
-    redis_client.ts.create(str(mac_address)+':humidity_uncompressed', uncompressed = True)
-except:
-    pass
 
 
 # Starts audio recording
@@ -258,8 +251,6 @@ with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = sa
     print('AUDIO RECORDING STARTED')
     # Store timestamp when there is no silence
     while True:
-        if not silence:
-            oldT = time() # save the time at which the state changes, in order to start counting 5 seconds until the next command
         # If data collection is enabled and 2 seconds have passed from the previous data collection, collect new data
         if data_collection_state and (timestamp is None or (time() - timestamp >= 2)):
             timestamp = int(time())
@@ -270,8 +261,6 @@ with sd.InputStream(device = 1, channels = 1, dtype = bit_depth, samplerate = sa
                 humidity = dht_device.humidity
                 redis_client.ts().add(str(mac_address)+':temperature', timestamp, temperature)
                 redis_client.ts().add(str(mac_address)+':humidity', timestamp, humidity)
-                redis_client.ts().add(str(mac_address)+':temperature_uncompressed', timestamp, temperature)
-                redis_client.ts().add(str(mac_address)+':humidity_uncompressed', timestamp, humidity)
                 print(f'{formatted_time} - {mac_address}:temperature = {temperature}')
                 print(f'{formatted_time} - {mac_address}:humidity = {humidity}')
             except:
