@@ -1,0 +1,43 @@
+@host = https://799d8518-7eff-43b1-a4b1-4fa1ee546f02.deepnoteproject.com
+
+###
+GET {{host}}/status
+
+###
+GET {{host}}/sensors
+
+###
+POST {{host}}/sensors/
+Content-Type: application/json
+
+{"mac_address": "0xdca632c91d8d"}
+
+###
+GET {{host}}/sensors
+
+###
+GET {{host}}/sensors?min_t_samples=2
+
+###
+GET {{host}}/sensors?min_t_samples=2&min_h_samples=2
+
+###
+GET {{host}}/sensor/0xdca632c91d8d
+
+###
+GET {{host}}/sensor/
+
+###
+GET {{host}}/sensor/0xaaa
+
+###
+PUT {{host}}/sensor/0xdca632c91d8d
+Content-Type: application/json
+
+{
+    "t_retention": 172800000,
+    "h_retention": 86400000,
+}
+
+###
+DELETE {{host}}/sensor/0xdca632c91d8d
