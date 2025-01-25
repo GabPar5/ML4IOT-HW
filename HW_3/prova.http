@@ -1,8 +1,0 @@
-@host = https://b4ef5aa4-3f71-4837-91f1-c6fd9810a7ea.deepnoteproject.com
-
-###
-GET {{host}}/status
-
-###
-GET {{host}}/data/0xe45f01e89914?min_t_samples=2&min_h_samples=2
-
